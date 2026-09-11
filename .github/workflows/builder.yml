@@ -1,7 +1,22 @@
 name: Build XPEViewer
+run-name: "Build XPEViewer ${{ inputs.leg || github.event_name }} ${{ inputs.racecar_run }}"
 
 on:
   workflow_dispatch:
+    inputs:
+      leg:
+        description: "baseline (uninstrumented) or instrumented (under chalk/curiosity)"
+        type: choice
+        options: [instrumented, baseline]
+        default: baseline
+      profile:
+        description: "CrashOverride chalk profile"
+        type: string
+        default: curiosity-tests-racecar
+      racecar_run:
+        description: "racecar correlation token, echoed into the run name"
+        type: string
+        default: ""
   release:
     types: [created]
   schedule:
@@ -11,6 +26,7 @@ permissions:
   contents: read
 
 env:
+  CHALK_ON: ${{ inputs.leg == 'instrumented' }}
   SRC_PATH: ${{ github.workspace }}/src
   SRC_PATH_WIN: ${{ github.workspace }}\src
   RELEASE_PATH: ${{ github.workspace }}/src/release
@@ -95,6 +111,7 @@ jobs:
           if-no-files-found: error
 
   build-windows-32:
+    if: false   # racecar: non-Linux runner, not measured here
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
@@ -149,6 +166,7 @@ jobs:
           if-no-files-found: error
 
   build-windows-64:
+    if: false   # racecar: non-Linux runner, not measured here
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
@@ -220,6 +238,7 @@ jobs:
           merge-multiple: true
 
       - name: Upload Release as Download
+        continue-on-error: true   # racecar: scan/report/push step, must not fail the build
         uses: softprops/action-gh-release@v2
         with:
           token: ${{ secrets.RELEASE_TOKEN || github.token }}
