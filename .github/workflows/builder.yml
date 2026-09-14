@@ -23,6 +23,7 @@ on:
     - cron: '0 0 * * MON'
 
 permissions:
+  id-token: write
   contents: read
 
 env:
@@ -35,11 +36,18 @@ jobs:
   build-ubuntu-24:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: crashappsec/action-checkout@main
         with:
+          chalk: ${{ env.CHALK_ON }}
+          profile: ${{ inputs.profile || 'curiosity-tests-racecar' }}
+          lfs: false
           submodules: 'recursive'
           path: ${{ env.SRC_PATH }}
-
+      - name: Assert instrumentation is live
+        if: env.CHALK_ON == 'true'
+        continue-on-error: true
+        run: |
+          test -n "${CURIOSITY_ROOT:-}" || { echo "::warning::CURIOSITY_ROOT unset in this step - in a container job the observables install on the host"; exit 1; }
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -61,11 +69,18 @@ jobs:
   build-ubuntu-24-arm:
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v4
+      - uses: crashappsec/action-checkout@main
         with:
+          chalk: ${{ env.CHALK_ON }}
+          profile: ${{ inputs.profile || 'curiosity-tests-racecar' }}
+          lfs: false
           submodules: 'recursive'
           path: ${{ env.SRC_PATH }}
-
+      - name: Assert instrumentation is live
+        if: env.CHALK_ON == 'true'
+        continue-on-error: true
+        run: |
+          test -n "${CURIOSITY_ROOT:-}" || { echo "::warning::CURIOSITY_ROOT unset in this step - in a container job the observables install on the host"; exit 1; }
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -87,11 +102,18 @@ jobs:
   build-ubuntu-22:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: crashappsec/action-checkout@main
         with:
+          chalk: ${{ env.CHALK_ON }}
+          profile: ${{ inputs.profile || 'curiosity-tests-racecar' }}
+          lfs: false
           submodules: 'recursive'
           path: ${{ env.SRC_PATH }}
-
+      - name: Assert instrumentation is live
+        if: env.CHALK_ON == 'true'
+        continue-on-error: true
+        run: |
+          test -n "${CURIOSITY_ROOT:-}" || { echo "::warning::CURIOSITY_ROOT unset in this step - in a container job the observables install on the host"; exit 1; }
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -114,11 +136,18 @@ jobs:
     if: false   # racecar: non-Linux runner, not measured here
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v4
+      - uses: crashappsec/action-checkout@main
         with:
+          chalk: ${{ env.CHALK_ON }}
+          profile: ${{ inputs.profile || 'curiosity-tests-racecar' }}
+          lfs: false
           submodules: 'recursive'
           path: ${{ env.SRC_PATH }}
-
+      - name: Assert instrumentation is live
+        if: env.CHALK_ON == 'true'
+        continue-on-error: true
+        run: |
+          test -n "${CURIOSITY_ROOT:-}" || { echo "::warning::CURIOSITY_ROOT unset in this step - in a container job the observables install on the host"; exit 1; }
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
         with:
@@ -169,11 +198,18 @@ jobs:
     if: false   # racecar: non-Linux runner, not measured here
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v4
+      - uses: crashappsec/action-checkout@main
         with:
+          chalk: ${{ env.CHALK_ON }}
+          profile: ${{ inputs.profile || 'curiosity-tests-racecar' }}
+          lfs: false
           submodules: 'recursive'
           path: ${{ env.SRC_PATH }}
-
+      - name: Assert instrumentation is live
+        if: env.CHALK_ON == 'true'
+        continue-on-error: true
+        run: |
+          test -n "${CURIOSITY_ROOT:-}" || { echo "::warning::CURIOSITY_ROOT unset in this step - in a container job the observables install on the host"; exit 1; }
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
         with:
@@ -229,6 +265,7 @@ jobs:
       - build-windows-32
       - build-windows-64
     permissions:
+      id-token: write
       contents: write
     steps:
       - name: Download Build Artifacts
